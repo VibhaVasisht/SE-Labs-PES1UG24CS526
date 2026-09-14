@@ -1,0 +1,51 @@
+@startuml use-case-diagram
+' UML Use-Case Diagram - PS #36 Restaurant Table Booking & Pre-Ordering App
+' Editable source; the rendered diagram is use-case-diagram.png / .svg
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Diner" as Diner
+actor "Restaurant Manager" as Manager
+actor "Payment Gateway" as Gateway <<external system>>
+
+rectangle "Restaurant Table Booking & Pre-Ordering App" {
+  usecase UC01 as "UC-01 Reserve Table
+--
+extension points
+Add Pre-Order"
+  usecase "UC-02 Check Table Availability" as UC02
+  usecase "UC-03 Pre-Order Food" as UC03
+  usecase "UC-04 Pay for Pre-Order" as UC04
+  usecase "UC-05 Calculate Kitchen Prep Timeline" as UC05
+  usecase "UC-06 Update Arrival Time" as UC06
+  usecase "UC-07 Configure Floor Plan" as UC07
+  usecase "UC-08 Manage Menu Availability" as UC08
+  usecase "UC-09 View Kitchen Prep Queue" as UC09
+  usecase UC10 as "UC-10 Update Table Status
+--
+extension points
+Party Overdue"
+  usecase "UC-11 Mark No-Show" as UC11
+}
+
+' Associations
+Diner -- UC01
+Diner -- UC03
+Diner -- UC06
+UC07 -- Manager
+UC08 -- Manager
+UC09 -- Manager
+UC10 -- Manager
+UC04 -- Gateway
+
+' «include»
+UC01 ..> UC02 : <<include>>
+UC03 ..> UC04 : <<include>>
+UC03 ..> UC05 : <<include>>
+UC06 ..> UC05 : <<include>>
+
+' «extend» (arrow points to the base use case)
+UC03 ..> UC01 : <<extend>>\n[diner opts to pre-order]
+UC11 ..> UC10 : <<extend>>\n[party not seated 15 min after arrival]
+@enduml
