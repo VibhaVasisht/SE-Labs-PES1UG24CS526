@@ -1,0 +1,51 @@
+@startuml component-diagram
+' UML Component Diagram: Restaurant Table Booking & Pre-Ordering App (Layered Architecture)
+' Ball (lollipop) = provided interface, socket = required interface
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName Arial
+title Restaurant Table Booking & Pre-Ordering App: Layered Architecture
+
+package "Presentation Layer" {
+  component "User Interface Component\n(Diner App / Manager Terminal)" as UI
+}
+
+package "Business Layer" {
+  component "Reservation Manager Component" as RES
+  component "Kitchen Scheduler Component" as KIT
+  component "Order Manager Component" as ORD
+  component "Payment Service Component" as PAY
+}
+
+package "Data Layer" {
+  component "Database Component" as DB
+}
+
+cloud "Payment Gateway\n(external)" as GW
+
+interface "Reservation Interface\n(REST API)" as IRes
+interface "Order Interface\n(REST API)" as IOrd
+interface "Payment Interface\n(internal API call)" as IPay
+interface "Kitchen Schedule Interface\n(internal API call)" as IKit
+interface "Database Interface\n(SQL queries)" as IDB
+
+' Provided interfaces (ball)
+RES -up- IRes
+ORD -up- IOrd
+PAY -up- IPay
+KIT -up- IKit
+DB -up- IDB
+
+' Required interfaces (socket)
+UI -down-( IRes
+UI -down-( IOrd
+ORD -down-( IPay
+ORD -down-( IKit
+RES -down-( IKit
+RES -down-( IDB
+ORD -down-( IDB
+KIT -down-( IDB
+
+' External payment gateway
+PAY ..> GW : <<use>>\nHTTPS (tokenised card)
+@enduml
