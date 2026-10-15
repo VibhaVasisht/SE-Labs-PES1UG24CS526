@@ -1,0 +1,268 @@
+
+❯ Task 1: Fix the high-score bug
+  The high score is supposed to update — and be saved to dino_highscore.txt —
+  whenever the current run's score beats the previous best. In the current
+  build, the high score never updates no matter how well you play, because the
+  comparison that decides whether to update it is backwards. Look at the if
+  condition right after a collision is detected in Game.update, and check which
+  side of the comparison should be "the run that just ended" and which should
+  be "the best score seen so far."
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ Update(game.py)
+  ⎿  Added 1 line, removed 1 line
+      142          if hit:
+      143              self.state = "lose"
+      144              current = self.score // 10
+      145 -            if self.high_score > current:                     
+      145 +            if current > self.high_score:                     
+      146                  self.high_score = current
+      147                  save_high_score(self.high_score)
+      148              return
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I fixed the high-score bug in game.py:145 (game.py#L145). The comparison was
+  backwards:
+
+  # before
+  if self.high_score > current:
+  # after
+  if current > self.high_score:
+
+  current is the score of the run that just ended, and self.high_score is the
+  best score so far. The old condition only ran when the best was already higher
+  than the new score, so the best score could only go down, never up. Since
+  scores start at 0, it never changed at all. Now a run that beats the best
+  updates self.high_score and saves it to dino_highscore.txt through
+  save_high_score. A run that only ties the best leaves it alone.
+
+  I checked that game.py still compiles, but I haven't played the game to watch
+  the high score update. Your existing uncommitted change to the pygame import
+  is still there, and I haven't committed anything.
+
+❯ <ide_opened_file>The user opened the file /Users/vibha/36_dinoRun/game.py in
+  the IDE. This may or may not be related to the current
+  task.</ide_opened_file>
+
+
+❯ Task 2: Implement dino_tint(on_ground)
+  Called once per frame in Dino.draw, as color = dino_tint(self.on_ground) or
+  self.color. It receives a boolean: True while the dino is standing on the
+  ground, False while it's airborne. Return an (r, g, b) color, or None to keep
+  the default green. Idea: give the dino a different color while it's
+  mid-jump.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Update(game.py)
+  ⎿  Added 3 lines, removed 1 line
+      13  
+      14  def dino_tint(on_ground):
+      15      """Return an (r, g, b) colour override for the dino based o
+          n whether it's on the ground, or None for the default green."""
+      16 -    pass                                                       
+      16 +    if on_ground:                                              
+      17 +        return None                                            
+      18 +    return (70, 130, 200)                                      
+      19  
+      20  
+      21  def on_obstacle_passed(obstacle, score):
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I implemented dino_tint in game.py:14-18 (game.py#L14-L18). The dino now turns
+  blue while it's in the air and goes back to its normal green when it lands:
+
+  def dino_tint(on_ground):
+      if on_ground:
+          return None
+      return (70, 130, 200)
+
+  Returning None on the ground keeps the default green, because Dino.draw uses
+  dino_tint(...) or self.color. I chose blue so the jumping dino stands out from
+  both the green and the red obstacles.
+
+  I called the function directly and got None for the ground and (70, 130, 200)
+  in the air. I haven't run the game to see the colour change on screen.
+
+  This is only in your local 36_dinoRun folder. I haven't pushed it to lab-4
+  this time; I can update that copy there if you want.
+
+
+❯ Task 3: Implement on_obstacle_passed(obstacle, score)
+  Called from Game.update exactly once per obstacle, the first frame that
+  obstacle's right edge scrolls past the dino's left edge (i.e. it's been
+  successfully jumped, not just spawned or removed off-screen). It receives the
+  Obstacle that was passed and the score at that moment. Its return value is
+  ignored. Idea: a small "+1" popup, or a running combo counter for consecutive
+  obstacles cleared without a hit.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Update(game.py)
+  ⎿  Added 5 lines
+       9  GROUND_COLOR = (80, 80, 80)
+      10  GRAVITY, JUMP_FORCE = 0.6, -14
+      11  HIGH_SCORE_FILE = "dino_highscore.txt"
+      12 +POPUP_FRAMES = 40                                              
+      13  
+      14 +# Obstacles cleared in the current run, and the "+1" popups sti
+         +ll on screen as [x, y, frames_left].                           
+      15 +combo = 0                                                      
+      16 +popups = []                                                    
+      17  
+      18 +                                                               
+      19  def dino_tint(on_ground):
+      20      """Return an (r, g, b) colour override for the dino based o
+          n whether it's on the ground, or None for the default green."""
+      21      if on_ground:
+
+⏺ Update(game.py)
+  ⎿  Added 9 lines, removed 1 line
+      25  
+      26  def on_obstacle_passed(obstacle, score):
+      27      """Called once, the frame an obstacle finishes scrolling pa
+          st the dino. Add a sound or a combo counter here."""
+      28 -    pass                                                       
+      28 +    global combo                                               
+      29 +    combo += 1                                                 
+      30 +    popups.append([obstacle.rect.centerx, obstacle.rect.top - 1
+         +0, POPUP_FRAMES])                                              
+      31  
+      32  
+      33 +def reset_combo():                                             
+      34 +    global combo                                               
+      35 +    combo = 0                                                  
+      36 +    popups.clear()                                             
+      37 +                                                               
+      38 +                                                               
+      39  def max_jumps():
+      40      """Return how many jumps the dino gets before it must land 
+          again (2 for a double jump), or None for the default of 1."""
+      41      pass
+
+⏺ Update(game.py)
+  ⎿  Added 1 line
+      125          self.spawn_timer = 0
+      126          self.spawn_interval = 90
+      127          self.state = "wait"
+      128 +        reset_combo()                                         
+      129  
+      130      def start_or_jump(self):
+      131          if self.state == "lose":
+
+⏺ Update(game.py)
+  ⎿  Added 5 lines
+      155                  hit = True
+      156          self.obstacles = [o for o in self.obstacles if not o.i
+           s_off_screen()]
+      157  
+      158 +        for p in popups:                                      
+      159 +            p[1] -= 1                                         
+      160 +            p[2] -= 1                                         
+      161 +        popups[:] = [p for p in popups if p[2] > 0]           
+      162 +                                                              
+      163          if hit:
+      164              self.state = "lose"
+      165              current = self.score // 10
+
+⏺ Update(game.py)
+  ⎿  Added 8 lines
+      181  
+      182          score_surf = self.font.render(f"Score: {self.score // 
+           10}   Best: {self.high_score}", True, (50, 50, 50))
+      183          screen.blit(score_surf, (WIDTH - 260, 20))
+      184 +        if combo > 0:                                         
+      185 +            combo_surf = self.font.render(f"Combo x{combo}", T
+          +rue, (70, 130, 200))                                          
+      186 +            screen.blit(combo_surf, (WIDTH - 260, 46))        
+      187  
+      188 +        for x, y, frames_left in popups:                      
+      189 +            popup_surf = self.font.render("+1", True, (70, 130
+          +, 200))                                                       
+      190 +            popup_surf.set_alpha(255 * frames_left // POPUP_FR
+          +AMES)                                                         
+      191 +            screen.blit(popup_surf, popup_surf.get_rect(center
+          +=(x, y)))                                                     
+      192 +                                                              
+      193          if self.state == "wait":
+      194              msg = self.big_font.render("Press SPACE to Start",
+            True, (80, 80, 80))
+      195              screen.blit(msg, msg.get_rect(center=(WIDTH // 2, 
+           HEIGHT // 2 - 10)))
+
+⏺ Now a headless test that runs the game loop with the dummy video driver:
+
+  Ran 1 shell command (ctrl+o to expand)
+⏺ I implemented on_obstacle_passed in game.py (game.py#L26-L36). Each time you
+  clear an obstacle:
+
+  - A "+1" popup appears above the obstacle, floats up and fades out over 40
+    frames (about 0.7 seconds).
+  - A combo counter, "Combo x N", shows under the score once you've cleared at
+    least one obstacle.
+
+  Since any hit ends the run, the combo is effectively the number of obstacles
+  cleared this run. It goes back to 0 when you restart.
+
+  How it's wired up:
+  - The function has no access to the Game object, so the combo count and the
+    active popups are stored at the top of the file, next to the other settings.
+  - A new reset_combo() clears them, and Game.reset calls it.
+  - Game.update moves and fades the popups each frame, and Game.draw draws them
+    and the combo label in the same blue as the jumping dino.
+
+  Testing: I ran the game logic in your .venv without opening a window. I held
+  the dino in the air while an obstacle passed underneath. The combo went to 1
+  and a popup appeared, the popup was gone 60 frames later, and reset() set the
+  combo back to 0. I haven't played it with a real window, so the look of the
+  popup and its placement haven't been checked on screen.
+
+  This isn't committed or pushed yet. I can do both, including updating lab-4 in
+  SE-Labs-PES1UG24CS526.
+
+❯ Task 4: Implement max_jumps()
+  Called every time the player tries to jump, as part of if self.jump_count <
+  (max_jumps() or 1): in Dino.jump. It takes no arguments and should return an
+  integer — the number of jumps the dino gets before it must touch the ground
+  again — or None for the default of 1 (no double jump). The jump_count
+  bookkeeping (incrementing on jump, resetting to 0 on landing) is already
+  implemented; you only need to raise the limit. Idea: return 2 for a double
+  jump.
+
+⏺ Update(game.py)
+  ⎿  Added 1 line, removed 1 line
+      38  
+      39  def max_jumps():
+      40      """Return how many jumps the dino gets before it must land 
+          again (2 for a double jump), or None for the default of 1."""
+      41 -    pass                                                       
+      41 +    return 2                                                   
+      42  
+      43  
+      44  def load_high_score():
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The first jump got cancelled because the dino started below the ground line,
+  snapping it back on the first update. I'll retest after letting the dino
+  settle on the ground first.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I implemented max_jumps() in game.py (game.py#L39-L41). It now returns 2, so
+  the dino can jump once more in mid-air before it has to land.
+
+  I tested it in your .venv without opening a window:
+  - The first and second presses both jumped.
+  - A third press in mid-air was ignored.
+  - After landing, the jump count went back to 0, so you get two jumps again.
+
+  I found a separate bug while testing, not caused by this task. The dino starts
+  with its bottom 60px below the ground line, because Game.reset creates it
+  with Dino(80, GROUND_Y). When the very first Space press starts the game, the
+  next frame snaps the dino back to the ground and cancels that jump. Jumps
+  after that work normally. A one-line fix is to create it at GROUND_Y - 60; I
+  can make that change if you want.
