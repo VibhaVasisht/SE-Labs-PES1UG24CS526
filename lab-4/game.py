@@ -9,6 +9,11 @@ BG_COLOR = (245, 245, 245)
 GROUND_COLOR = (80, 80, 80)
 GRAVITY, JUMP_FORCE = 0.6, -14
 HIGH_SCORE_FILE = "dino_highscore.txt"
+POPUP_FRAMES = 40
+
+# Obstacles cleared in the current run, and the "+1" popups still on screen as [x, y, frames_left].
+combo = 0
+popups = []
 
 
 def dino_tint(on_ground):
@@ -20,7 +25,15 @@ def dino_tint(on_ground):
 
 def on_obstacle_passed(obstacle, score):
     """Called once, the frame an obstacle finishes scrolling past the dino. Add a sound or a combo counter here."""
-    pass
+    global combo
+    combo += 1
+    popups.append([obstacle.rect.centerx, obstacle.rect.top - 10, POPUP_FRAMES])
+
+
+def reset_combo():
+    global combo
+    combo = 0
+    popups.clear()
 
 
 def max_jumps():
@@ -112,6 +125,7 @@ class Game:
         self.spawn_timer = 0
         self.spawn_interval = 90
         self.state = "wait"
+        reset_combo()
 
     def start_or_jump(self):
         if self.state == "lose":
@@ -141,6 +155,11 @@ class Game:
                 hit = True
         self.obstacles = [o for o in self.obstacles if not o.is_off_screen()]
 
+        for p in popups:
+            p[1] -= 1
+            p[2] -= 1
+        popups[:] = [p for p in popups if p[2] > 0]
+
         if hit:
             self.state = "lose"
             current = self.score // 10
@@ -162,6 +181,14 @@ class Game:
 
         score_surf = self.font.render(f"Score: {self.score // 10}   Best: {self.high_score}", True, (50, 50, 50))
         screen.blit(score_surf, (WIDTH - 260, 20))
+        if combo > 0:
+            combo_surf = self.font.render(f"Combo x{combo}", True, (70, 130, 200))
+            screen.blit(combo_surf, (WIDTH - 260, 46))
+
+        for x, y, frames_left in popups:
+            popup_surf = self.font.render("+1", True, (70, 130, 200))
+            popup_surf.set_alpha(255 * frames_left // POPUP_FRAMES)
+            screen.blit(popup_surf, popup_surf.get_rect(center=(x, y)))
 
         if self.state == "wait":
             msg = self.big_font.render("Press SPACE to Start", True, (80, 80, 80))
