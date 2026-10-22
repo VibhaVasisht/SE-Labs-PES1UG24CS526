@@ -1,61 +1,51 @@
-Run started:2026-10-22 05:56:13.144625
+Run started:2026-10-22 06:13:04.353088
 
 Test results:
 >> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
    Severity: Low   Confidence: High
    CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
    More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
-   Location: ./smart_home.py:2:0
-1	import json
-2	import subprocess
-3	
-
---------------------------------------------------
->> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
-   Severity: Medium   Confidence: Medium
-   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
-   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
-   Location: ./smart_home.py:4:11
-3	
-4	HUB_HOST = "0.0.0.0"
-5	HUB_PORT = 8080
+   Location: ./smart_home.py:3:0
+2	import os
+3	import subprocess
+4	
 
 --------------------------------------------------
 >> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'smarthome-demo'
    Severity: Low   Confidence: Medium
    CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
    More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b105_hardcoded_password_string.html
-   Location: ./smart_home.py:7:15
-6	POWER_USAGE = {"light" : 10, "fan": 60, "thermostat": 1500, "tv": 120}
-7	HUB_PASSWORD = "smarthome-demo"
-8	devices = {}
+   Location: ./smart_home.py:8:15
+7	POWER_USAGE = {"light" : 10, "fan": 60, "thermostat": 1500, "tv": 120}
+8	HUB_PASSWORD = "smarthome-demo"
+9	devices = {}
 
 --------------------------------------------------
->> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
-   Severity: High   Confidence: High
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
    CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
-   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html
-   Location: ./smart_home.py:51:4
-50	    # Helper kept for the lab: not called by the demo
-51	    subprocess.call("bash scenes/" + sceneScript, shell=True)
-52	
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: ./smart_home.py:58:4
+57	        return
+58	    subprocess.call(["/bin/bash", os.path.join("scenes", sceneScript)])
+59	
 
 --------------------------------------------------
 
 Code scanned:
-	Total lines of code: 51
+	Total lines of code: 58
 	Total lines skipped (#nosec): 0
 	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
 
 Run metrics:
 	Total issues (by severity):
 		Undefined: 0
-		Low: 2
-		Medium: 1
-		High: 1
+		Low: 3
+		Medium: 0
+		High: 0
 	Total issues (by confidence):
 		Undefined: 0
 		Low: 0
-		Medium: 2
+		Medium: 1
 		High: 2
 Files skipped (0):

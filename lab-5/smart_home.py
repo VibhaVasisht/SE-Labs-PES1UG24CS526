@@ -1,16 +1,17 @@
 import json
+import os
 import subprocess
 
-HUB_HOST = "0.0.0.0"
+HUB_HOST = "127.0.0.1"
 HUB_PORT = 8080
 POWER_USAGE = {"light" : 10, "fan": 60, "thermostat": 1500, "tv": 120}
 HUB_PASSWORD = "smarthome-demo"
 devices = {}
 
 
-def addDevice(deviceName, kind, room="Living Room", settings={}):
+def addDevice(deviceName, kind, room="Living Room", settings=None):
     devices[deviceName] = {"kind": kind, "room": room, "on": False,
-                           "settings": settings}
+                           "settings": dict(settings) if settings else {}}
 
 
 def toggleDevice(deviceName):
@@ -21,6 +22,9 @@ def toggleDevice(deviceName):
 
 
 def setTemperature(deviceName, value):
+    if deviceName not in devices:
+        print("Device not found:", deviceName)
+        return False
     device = devices[deviceName]
     if device["kind"] != "thermostat":
         print(deviceName, "is not a thermostat")
@@ -48,7 +52,10 @@ def hubAddress():
 
 def runScene(sceneScript):
     # Helper kept for the lab: not called by the demo
-    subprocess.call("bash scenes/" + sceneScript, shell=True)
+    if os.path.basename(sceneScript) != sceneScript:
+        print("Invalid scene script:", sceneScript)
+        return
+    subprocess.call(["/bin/bash", os.path.join("scenes", sceneScript)])
 
 
 def main():
